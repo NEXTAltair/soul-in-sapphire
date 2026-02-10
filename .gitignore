@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Local env/secrets
+.env
+.env.*
+
+# ClawdHub metadata
+.clawdhub/
