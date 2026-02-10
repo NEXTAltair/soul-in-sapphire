@@ -102,6 +102,7 @@ async function main() {
     events: `${base}-events`,
     emotions: `${base}-emotions`,
     state: `${base}-state`,
+    journal: `${base}-journal`,
   };
 
   const existing = await listChildDatabases(parentPageId);
@@ -157,6 +158,30 @@ async function main() {
     avoid: { multi_select: { options: ['risk', 'noise', 'long_tasks', 'external_actions', 'ambiguity'].map(name => ({ name })) } },
   });
 
+  created.journal = await ensureDb(parentPageId, existing, names.journal, {
+    Name: { title: {} },
+    when: { date: {} },
+
+    // Main content
+    body: { rich_text: {} },
+    worklog: { rich_text: {} },
+    session_summary: { rich_text: {} },
+
+    // Mood/intent
+    mood_label: { select: { options: ['clear', 'wired', 'dull', 'tense', 'playful', 'guarded', 'tender'].map(name => ({ name })) } },
+    intent: { select: { options: ['build', 'fix', 'organize', 'explore', 'rest', 'socialize', 'reflect'].map(name => ({ name })) } },
+    future: { rich_text: {} },
+
+    // World context
+    world_news: { rich_text: {} },
+
+    // Machine tags
+    tags: { multi_select: { options: [] } },
+
+    // Source
+    source: { select: { options: ['cron', 'manual'].map(name => ({ name })) } },
+  });
+
   // Resolve data_source_ids and patch relations in data_sources generation
   async function dbRef(dbid) {
     const db = await getDatabase(dbid);
@@ -169,16 +194,17 @@ async function main() {
   const events = await dbRef(created.events.database_id);
   const emotions = await dbRef(created.emotions.database_id);
   const state = await dbRef(created.state.database_id);
+  const journal = await dbRef(created.journal.database_id);
 
   await patchDataSource(events.dataSourceId, {
-    emotions: relationSingleProperty(emotions).relation,
-    state: relationSingleProperty(state).relation,
+    emotions: relationSingleProperty(emotions),
+    state: relationSingleProperty(state),
   });
   await patchDataSource(emotions.dataSourceId, {
-    event: relationSingleProperty(events).relation,
+    event: relationSingleProperty(events),
   });
   await patchDataSource(state.dataSourceId, {
-    event: relationSingleProperty(events).relation,
+    event: relationSingleProperty(events),
   });
 
   const cfg = {
@@ -188,11 +214,14 @@ async function main() {
     events: { database_id: events.databaseId, data_source_id: events.dataSourceId },
     emotions: { database_id: emotions.databaseId, data_source_id: emotions.dataSourceId },
     state: { database_id: state.databaseId, data_source_id: state.dataSourceId },
+    journal: { database_id: journal.databaseId, data_source_id: journal.dataSourceId },
     // legacy flat keys currently used by python scripts
     valentina_events_database_id: events.databaseId,
     valentina_emotions_database_id: emotions.databaseId,
     valentina_state_database_id: state.databaseId,
     valentina_state_data_source_id: state.dataSourceId,
+    journal_database_id: journal.databaseId,
+    journal_data_source_id: journal.dataSourceId,
   };
 
   fs.mkdirSync(path.dirname(args.outPath), { recursive: true });

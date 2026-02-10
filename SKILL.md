@@ -141,3 +141,37 @@ JSON
 - Tick: `node skills/soul-in-sapphire/scripts/emostate_tick.js` (JSON on stdin)
 
 Python scripts are kept for reference/legacy.
+
+
+## Journal (sleep reflection)
+
+If you created `<base>-journal`, you can write an entry with:
+
+```bash
+echo '{"body":"...","source":"cron"}' | node skills/soul-in-sapphire/scripts/journal_write.js
+```
+
+
+## OpenClaw integration (cron / heartbeat)
+
+### Cron: 01:00 journal
+
+Recommended: create a cron job that runs daily at 01:00 JST and writes a journal entry.
+The job should:
+
+- ALWAYS write an entry
+- include emotional reflection (primary) + worklog/session summary (secondary)
+- include 1-2 world news items from today (use `web_search`) with brief thoughts
+- include future intent
+- write tags based on your configured vocab (see `~/.config/soul-in-sapphire/config.json` -> `journal.tag_vocab`)
+
+Implementation target (local):
+- `node /home/altair/clawd/skills/soul-in-sapphire/scripts/journal_write.js`
+
+### Heartbeat: fuzzy emotion/state capture
+
+On heartbeat runs, optionally write an emostate tick when something "emotionally moved" you.
+This should be fuzzy and self-throttling (avoid spamming writes when nothing mattered).
+
+Implementation target:
+- `node /home/altair/clawd/skills/soul-in-sapphire/scripts/emostate_tick.js`
