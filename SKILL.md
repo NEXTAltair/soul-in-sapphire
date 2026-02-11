@@ -69,7 +69,8 @@ python3 skills/soul-in-sapphire/scripts/ltm_search.py --query "data_sources" --l
 
 ## Notes
 
-- These scripts use the shared helper: `skills/notionkit/scripts/notion_client.py`.
+- This skill no longer depends on `skills/notionkit/*`.
+- Notion API operations are handled by local helpers in this skill (`scripts/notion_client.js`, `scripts/notion_http.py`) and the recommended external dependency is `skills/notion-api-automation` (`scripts/notionctl.mjs`) for operational tooling.
 - Keep writes **high-signal**: prefer fewer, clearer entries over dumping chat logs.
 
 
